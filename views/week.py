@@ -1,3 +1,7 @@
+# Screen 2 — Enter your week. This is where the week in st.session_state.week gets filled in:
+# the wake time, then activities added/edited through a pop-up (the "modal" in the project context).
+# It converts what the widgets give (datetime.time) into integer minutes using YOUR helpers in
+# time_helpers.py, so every number stored in the week is minutes since midnight.
 import datetime
 
 import streamlit as st
@@ -7,10 +11,12 @@ from time_helpers import clock_to_minutes, minutes_to_clock
 
 DAY_NAMES = dict(zip(DAYS, ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]))
 
+# A shortcut to the shared week. Changing `week` here changes st.session_state.week.
 week = st.session_state.week
 
 st.title("Enter your week")
 
+# Until both clock conversions are written, show a notice instead of a form that can't save.
 try:
     clock_to_minutes(datetime.time(0, 0))
     minutes_to_clock(0)
@@ -23,12 +29,14 @@ except NotImplementedError:
 
 
 def clock(m):
-    return minutes_to_clock(m).strftime("%H:%M")
+    """Minutes since midnight -> "9:05 PM" style text for showing on screen."""
+    return minutes_to_clock(m).strftime("%I:%M %p").lstrip("0")
 
 
 # --- Wake time: set once, applies to every night ---
 
 def save_wake():
+    """Runs when the wake-time picker changes: stores it in week["wake"] as minutes."""
     t = st.session_state.wake_input
     week["wake"] = None if t is None else clock_to_minutes(t)
 
@@ -46,6 +54,7 @@ st.time_input(
 
 @st.dialog("Activity")
 def activity_dialog(index=None):
+    """The pop-up form. index=None adds a new activity; a number edits week["activities"][index]."""
     existing = week["activities"][index] if index is not None else None
 
     name = st.text_input("Activity name", value=existing["name"] if existing else "")
@@ -81,10 +90,13 @@ def activity_dialog(index=None):
             problems.append("Pick at least one day.")
         if start is None or end is None:
             problems.append("Set a start and an end time.")
+        elif start == end:
+            problems.append("Start and end can't be the same time.")
         if problems:
             for p in problems:
                 st.error(p)
             return
+        # THIS is where an activity is created: exactly the dictionary your calculation reads.
         activity = {
             "name": name.strip(),
             "days": [d for d in DAYS if d in days],
@@ -105,6 +117,8 @@ def activity_dialog(index=None):
 
 
 # --- The grid: Days | Activities, Monday to Sunday ---
+# Each activity is stored once but shown under every day in its "days" list, sorted by start time.
+# Clicking one opens the pop-up to edit it.
 
 st.subheader("Activities")
 if st.button("Add activity"):

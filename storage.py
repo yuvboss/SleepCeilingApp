@@ -1,17 +1,38 @@
-"""Save and load the week as a JSON file the user downloads.
+"""The shape of a week, and saving/loading it as a JSON file the user downloads.
 
 Nothing is written on the server (its filesystem is ephemeral); the file lives with the user.
+
+THE WEEK (this is what st.session_state.week holds, and what your calculation reads):
+
+    {
+        "wake": 420,             # wake time, minutes since midnight (7:00). None until the user sets it.
+        "activities": [          # every activity, each stored ONCE with the list of days it's on
+            {
+                "name": "Homework",       # as the user typed it
+                "days": ["Mon", "Tue"],   # some of DAYS below, always in Mon..Sun order
+                "start": 1260,            # minutes since midnight, 0..1439 (21:00)
+                "end": 1380,              # minutes since midnight (23:00). Can be LESS than start:
+                                          #   that means the activity runs past midnight.
+                "importance": 3,          # 1..5. 5 = untouchable, 1 = can be cut. Used by the recommender.
+                "malleable": False,       # collected but unused (project context, section 8.4)
+            },
+        ],
+    }
 """
 import json
 
+# The seven day codes used everywhere in the app. A day's position in this list is its day
+# number: DAYS.index("Mon") == 0 ... DAYS.index("Sun") == 6.
 DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 
 def empty_week():
+    """A brand-new week with nothing entered. app.py puts this into st.session_state.week."""
     return {"wake": None, "activities": []}
 
 
 def week_to_json(week):
+    """Turn the week into the text of the downloaded file (used by the sidebar's Download button)."""
     return json.dumps(week, indent=2)
 
 

@@ -9,9 +9,15 @@ import datetime
 
 def clock_to_minutes(t: datetime.time) -> int:
     """Return t as whole minutes since midnight, 0..1439."""
-    raise NotImplementedError("clock_to_minutes is not written yet")
+    return t.hour*60 + t.minute
 
 
 def minutes_to_clock(m: int) -> datetime.time:
     """Return m (minutes since midnight, 0..1439) as a datetime.time."""
-    raise NotImplementedError("minutes_to_clock is not written yet")
+    return datetime.time(m//60,m%60)
+
+def duration(start,end):
+    if end>=start:
+        return end - start 
+    elif start>end:
+        return ((24*60)+end)-start

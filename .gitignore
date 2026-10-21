@@ -2,3 +2,11 @@ venv/
 __pycache__/
 .pytest_cache/
 .DS_Store
+
+# Project notes for the AI agent (not part of the app)
+ClaudeContext/
+
+# Personal scratch files for trying things out
+tests.py
+practice.py
+scratch.py

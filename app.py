@@ -1,15 +1,28 @@
+# Entry point: `streamlit run app.py` starts here.
+#
+# Streamlit re-runs this whole file from the top every time the user clicks or types anything.
+# Normal variables are reset on every re-run; st.session_state is the one place that survives,
+# so the user's week is kept there. This file:
+#   1. creates the week in session state (once per browser tab),
+#   2. draws the sidebar (save/load) that appears on every screen,
+#   3. hands over to whichever screen the user is on (views/intro.py, week.py or results.py).
 import streamlit as st
 
 from storage import empty_week, week_from_json, week_to_json
 
 st.set_page_config(page_title="Sleep Planner", page_icon="🌙")
 
-# The whole week lives in the session: {"wake": minutes since midnight or None, "activities": [...]}
+# THE WEEK. Every screen reads and writes this same dictionary. Its exact shape is described at
+# the top of storage.py. It starts empty; views/week.py fills it as the user enters activities.
+# It belongs to one browser tab and is lost on refresh, which is why save/load exists.
 if "week" not in st.session_state:
     st.session_state.week = empty_week()
 
 
+# --- Sidebar: save and load the week as a JSON file ---
+
 def load_uploaded_week():
+    """Runs when the user picks a file to upload: replaces the week with the one in the file."""
     file = st.session_state.week_upload
     if file is None:
         return
@@ -40,6 +53,8 @@ with st.sidebar:
         else:
             st.error(text)
 
+# --- Navigation: the three screens from the project context, section 3 ---
+# Each st.Page is one file in views/. To add a screen, add a file there and a line here.
 pages = [
     st.Page("views/intro.py", title="Introduction", default=True),
     st.Page("views/week.py", title="Enter your week"),
