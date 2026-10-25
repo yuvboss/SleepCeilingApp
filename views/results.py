@@ -5,7 +5,7 @@ import streamlit as st
 #
 # WHERE THE DATA COMES FROM
 #   week = st.session_state.week     # filled in on the "Enter your week" screen
-#   week["wake"]                     # int minutes, or None if the user hasn't set it yet
+#   week["wake"]["Mon"]              # Monday MORNING's wake time, int minutes, or None if not set
 #   week["activities"]               # list of activity dicts (shape: top of storage.py)
 #
 # WHERE YOUR FUNCTIONS GO

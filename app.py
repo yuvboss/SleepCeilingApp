@@ -31,8 +31,9 @@ def load_uploaded_week():
     except ValueError as e:
         st.session_state.load_message = ("error", str(e))
         return
-    # Make the wake-time widget pick up the loaded value instead of keeping its old one.
-    st.session_state.pop("wake_input", None)
+    # Make the wake-time widgets pick up the loaded values instead of keeping their old ones.
+    for key in ["wake_input"] + [f"wake_{day}" for day in st.session_state.week["wake"]]:
+        st.session_state.pop(key, None)
     st.session_state.load_message = ("success", f"Loaded {file.name}.")
 
 

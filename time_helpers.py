@@ -8,12 +8,10 @@ import datetime
 
 
 def clock_to_minutes(t: datetime.time) -> int:
-    """Return t as whole minutes since midnight, 0..1439."""
     return t.hour*60 + t.minute
 
 
 def minutes_to_clock(m: int) -> datetime.time:
-    """Return m (minutes since midnight, 0..1439) as a datetime.time."""
     return datetime.time(m//60,m%60)
 
 def duration(start,end):

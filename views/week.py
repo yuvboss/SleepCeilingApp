@@ -33,21 +33,51 @@ def clock(m):
     return minutes_to_clock(m).strftime("%I:%M %p").lstrip("0")
 
 
-# --- Wake time: set once, applies to every night ---
+# --- Wake times: one per morning (project context, section 3 and 8.6) ---
+# The user sets a usual time, which fills every morning, then overrides the mornings that differ.
 
-def save_wake():
-    """Runs when the wake-time picker changes: stores it in week["wake"] as minutes."""
+def as_clock(m):
+    return None if m is None else minutes_to_clock(m)
+
+
+def save_default_wake():
+    """Usual wake time changed: update every morning that wasn't set to something different."""
     t = st.session_state.wake_input
-    week["wake"] = None if t is None else clock_to_minutes(t)
+    new = None if t is None else clock_to_minutes(t)
+    old = week["wake_default"]
+    for day in DAYS:
+        if week["wake"][day] is None or week["wake"][day] == old:
+            week["wake"][day] = new
+            st.session_state.pop(f"wake_{day}", None)  # let that day's picker show the new value
+    week["wake_default"] = new
+
+
+def save_day_wake(day):
+    """One morning's wake time changed."""
+    t = st.session_state[f"wake_{day}"]
+    week["wake"][day] = None if t is None else clock_to_minutes(t)
 
 
 st.time_input(
-    "Wake-up time (the same every day)",
-    value=None if week["wake"] is None else minutes_to_clock(week["wake"]),
+    "Usual wake-up time",
+    value=as_clock(week["wake_default"]),
     step=300,
     key="wake_input",
-    on_change=save_wake,
+    on_change=save_default_wake,
 )
+
+different = [day for day in DAYS if week["wake"][day] != week["wake_default"]]
+with st.expander("Different wake-up time on some mornings? (weekends usually are)", expanded=bool(different)):
+    columns = st.columns(7)
+    for column, day in zip(columns, DAYS):
+        column.time_input(
+            day,
+            value=as_clock(week["wake"][day]),
+            step=300,
+            key=f"wake_{day}",
+            on_change=save_day_wake,
+            args=(day,),
+        )
 
 
 # --- Activity modal: adds a new activity, or edits / deletes an existing one ---

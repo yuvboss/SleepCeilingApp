@@ -12,4 +12,5 @@ def test_entry_screen_shows_the_form():
     at.switch_page("views/week.py").run()
     assert not at.exception
     assert not at.warning
-    assert at.time_input(key="wake_input").label.startswith("Wake-up time")
+    assert at.time_input(key="wake_input").label == "Usual wake-up time"
+    assert at.time_input(key="wake_Sat").label == "Sat"

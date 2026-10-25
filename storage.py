@@ -5,7 +5,15 @@ Nothing is written on the server (its filesystem is ephemeral); the file lives w
 THE WEEK (this is what st.session_state.week holds, and what your calculation reads):
 
     {
-        "wake": 420,             # wake time, minutes since midnight (7:00). None until the user sets it.
+        "wake": {                # wake time for EACH MORNING, minutes since midnight. None until set.
+            "Mon": 400,          #   Monday morning 6:40
+            "Tue": 400,
+            ...
+            "Sat": 660,          #   Saturday morning 11:00 (overridden)
+            "Sun": 660,
+        },
+        "wake_default": 400,     # the "usual" wake time the form fills every morning with. Only the
+                                 #   form uses this; the calculation reads week["wake"][day].
         "activities": [          # every activity, each stored ONCE with the list of days it's on
             {
                 "name": "Homework",       # as the user typed it
@@ -28,7 +36,7 @@ DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 def empty_week():
     """A brand-new week with nothing entered. app.py puts this into st.session_state.week."""
-    return {"wake": None, "activities": []}
+    return {"wake": {day: None for day in DAYS}, "wake_default": None, "activities": []}
 
 
 def week_to_json(week):
@@ -46,11 +54,21 @@ def week_from_json(text):
         raise ValueError("That file isn't a saved week.")
 
     wake = data.get("wake")
-    if wake is not None and not _is_minute(wake):
-        raise ValueError("The wake time must be whole minutes since midnight, 0 to 1439.")
+    default = data.get("wake_default")
+    if wake is None or _is_minute(wake):
+        # A file saved before wake times were per day: one time for every morning.
+        default = wake
+        wake = {day: wake for day in DAYS}
+    if not isinstance(wake, dict) or set(wake) != set(DAYS):
+        raise ValueError("The wake times must give one time for each day, Mon to Sun.")
+    for day in DAYS:
+        if wake[day] is not None and not _is_minute(wake[day]):
+            raise ValueError(f"{day}: the wake time must be whole minutes since midnight, 0 to 1439.")
+    if default is not None and not _is_minute(default):
+        raise ValueError("The usual wake time must be whole minutes since midnight, 0 to 1439.")
 
     activities = [_check_activity(a, n) for n, a in enumerate(data["activities"], start=1)]
-    return {"wake": wake, "activities": activities}
+    return {"wake": {day: wake[day] for day in DAYS}, "wake_default": default, "activities": activities}
 
 
 def _is_int(v):
