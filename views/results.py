@@ -25,7 +25,7 @@ PredictedSleep = SleepCalculation(week)
 day, predicted, real = st.columns(3)
 #Headers
 day.markdown("**Day**")
-predicted.markdown("**Predicted Sleep**")
+predicted.markdown("**Sleep Ceiling**")
 real.markdown("**Real Sleep**")
 def as_hours(minutes):
     """Predicted minutes -> text like "8h 05m" for the table. The numbers themselves stay in minutes."""
@@ -37,8 +37,8 @@ def as_hours(minutes):
 
 
 #Rows
-# ActualSleep collects what the user types for each night, in hours (e.g. 7.5), Mon..Sun.
-# A night the user hasn't filled in yet is None.
+# ActualSleep collects what the user types for each night, in hours (e.g. 7h 30m -> 7.5), Mon..Sun.
+# The user types hours and minutes in two boxes; a night with both boxes empty is None.
 ActualSleep = []
 for i, row in enumerate(DAYS):
     day, predicted, real = st.columns(3)
@@ -49,23 +49,23 @@ for i, row in enumerate(DAYS):
         predicted.markdown(f":green[{as_hours(PredictedSleep[i])}]")
     else:
         predicted.markdown(f":red[{as_hours(PredictedSleep[i])}]")
-    actual = real.number_input(
-        f"Hours slept on {row} night",
-        key=f"actual_{row}",
-        min_value=0.0,
-        max_value=24.0,
-        step=0.25,
-        value=None,
-        placeholder="hours",
-        label_visibility="collapsed",
+    hours_box, minutes_box = real.columns(2)
+    hours = hours_box.number_input(
+        f"Hours slept on {row} night", key=f"actual_h_{row}", min_value=0, max_value=24, step=1,
+        value=None, placeholder="h", label_visibility="collapsed",
     )
+    minutes = minutes_box.number_input(
+        f"Minutes slept on {row} night", key=f"actual_m_{row}", min_value=0, max_value=55, step=5,
+        value=None, placeholder="min", label_visibility="collapsed",
+    )
+    actual = None if hours is None and minutes is None else (hours or 0) + (minutes or 0) / 60
     ActualSleep.append(actual)
     if actual == None:
         real.markdown(f":yellow[{actual}]")
     elif actual*60 >=510:
-        real.markdown(f":green[{actual}]")
+        real.markdown(f":green[{as_hours(round(actual * 60))}]")
     elif actual*60 < 510:
-        real.markdown(f":red[{actual}]")
+        real.markdown(f":red[{as_hours(round(actual * 60))}]")
 
 
 # --- Proceed: once the actual sleep is filled in, send the user to the next screen ---
