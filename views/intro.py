@@ -7,27 +7,30 @@ st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Rubik+Bubbles&display=swap');
-    .intro-hero { text-align: center; padding: 1.5rem 0 1rem; }
-    .intro-title {
-        font-family: 'Rubik Bubbles', 'Fredoka', sans-serif;
-        font-size: clamp(2.4rem, 7vw, 3.8rem);
-        line-height: 1.1;
-        margin: 0;
+    .intro-hero { text-align: center !important; padding: 1.5rem 0 1rem; }
+    .intro-hero div { text-align: center !important; }
+    div.intro-title {
+        font-family: 'Rubik Bubbles', 'Fredoka', sans-serif !important;
+        font-weight: 400 !important;   /* the font only comes in one weight; faking bold makes it jagged */
+        font-synthesis: none;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-size: clamp(3rem, 9vw, 5.25rem) !important;
+        line-height: 1.05 !important;
     }
-    .intro-tagline {
-        font-family: 'Fredoka', sans-serif;
-        font-weight: 700;
-        font-size: clamp(1.15rem, 3.2vw, 1.5rem);
-        margin: 0.6rem 0 0;
+    div.intro-tagline {
+        font-family: 'Fredoka', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: clamp(1.15rem, 3.2vw, 1.5rem) !important;
+        margin-top: 0.6rem;
     }
-    .intro-hero p { text-align: center !important; margin-left: 0 !important; margin-right: 0 !important; }
-    .intro-goal { font-size: 1.05rem; opacity: 0.7; margin-top: 0.8rem !important; }
+    div.intro-goal { font-size: 1.05rem !important; opacity: 0.7; margin-top: 0.8rem; }
     .intro-step h4 { font-family: 'Fredoka', sans-serif; margin-top: 0; }
     </style>
     <div class="intro-hero">
-        <p class="intro-title">Introducing Sleep Ceiling</p>
-        <p class="intro-tagline">The app that helps you reach your sleeping potential!</p>
-        <p class="intro-goal">Our goal is to help you optimize your sleep while maintaining a balanced schedule.</p>
+        <div class="intro-title">Introducing Sleep Ceiling</div>
+        <div class="intro-tagline">The app that helps you reach your sleeping potential!</div>
+        <div class="intro-goal">Our goal is to help you optimize your sleep while maintaining a balanced schedule.</div>
     </div>
     """,
     unsafe_allow_html=True,

@@ -1,4 +1,4 @@
-# Sleep Ceiling
+# Sleep Planner
 
 **A sleep-first schedule app for teenagers.** Enter a typical week once, and the app works out how much sleep that week actually leaves room for, night by night. It then compares that with how much you really sleep and tells you what to do next.
 
@@ -118,6 +118,7 @@ The Congressional App Challenge allows AI assistance as long as it is disclosed 
 - the table's input boxes and the hours display on the results screen
 - the automated tests in `tests/`
 - the visual design
+- the README with input and directions from me
 
 **How I used it otherwise:** Claude explained Python and Streamlit concepts as I needed them (loops, functions, dictionaries, imports), ran my code against test cases, and pointed out bugs and edge cases for me to fix. It was told not to write the core logic, and it didn't.
 
