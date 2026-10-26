@@ -76,6 +76,15 @@ after = SleepCalculation(updated)
 kept_names = {a["name"] for a in updated["activities"]}
 
 table = st.container(border=True)
+def activity_line(a):
+    """ "Homework: 7:52 PM – 9:07 PM  (was 8:30 PM – 11:00 PM)" — the old times only when they changed."""
+    line = f"{a['name']}: {clock_text(a['start'])} – {clock_text(a['end'])}"
+    original = original_by_name.get(a["name"])
+    if original and (round(a["start"]) % 1440, round(a["end"]) % 1440) != (original["start"], original["end"]):
+        line += f"  :gray[(was {clock_text(original['start'])} – {clock_text(original['end'])})]"
+    return line
+
+
 day_col, schedule_col, sleep_col = table.columns([1, 3, 2])
 day_col.markdown("**Day**")
 schedule_col.markdown("**Updated schedule**")
@@ -86,12 +95,12 @@ for i, day in enumerate(DAYS):
     day_col.markdown(f"**{day}**")
 
     lines = [
-        f"{a['name']}: {clock_text(a['start'])} – {clock_text(a['end'])}"
+        activity_line(a)
         for a in sorted(updated["activities"], key=lambda a: a["start"])
         if day in a["days"]
     ]
     lines += [
-        f":red[~~{a['name']}~~ cut]"
+        f":red[~~{a['name']}: {clock_text(a['start'])} – {clock_text(a['end'])}~~ cut]"
         for a in week["activities"]
         if day in a["days"] and a["name"] not in kept_names
     ]
