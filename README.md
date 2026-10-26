@@ -1,11 +1,11 @@
-# Sleep Planner
+# Sleep Ceiling
 
 **A sleep-first schedule app for teenagers.** Enter a typical week once, and the app works out how much sleep that week actually leaves room for, night by night. It then compares that with how much you really sleep and tells you what to do next.
 
 Congressional App Challenge 2026 · California's 15th district · Saro, Carlmont High School
 
-<!-- TODO before submitting: add the live link and the demo video link -->
-- **Live app:** _link to the Streamlit Community Cloud deployment_
+<!-- TODO before submitting: add the demo video link -->
+- **Live app:** [sleepceilingapp-hoh7zobihqmz6pdmdlo5bm.streamlit.app](https://sleepceilingapp-hoh7zobihqmz6pdmdlo5bm.streamlit.app)
 - **Demo video:** _link_
 
 ---
@@ -29,17 +29,23 @@ The app can't assume a teenager can simply go to bed earlier. At puberty the bod
 4. **Get one clear answer.** Each night is green at **8 h 30 min** or more and red below it, for both predicted and actual sleep:
    - **All green:** your week works, and the app says so plainly.
    - **Predicted and actual don't match on a night:** the week as entered is probably incomplete (phone time, homework running over, anything that didn't feel worth logging). The app sends you back to add it and recompute. After two rounds it stops and asks one question: how long it takes you to fall asleep. Over 30 minutes, it suggests raising that with a doctor.
-   - **A night is red for both:** the week genuinely doesn't have enough hours. The app goes to an **Updated schedule** with the smallest changes that make it fit.
+   - **A night is red for both:** the week genuinely doesn't have enough hours. The app goes to an **Updated schedule** that shortens or cuts activities to make room for sleep.
 
 ## How the Updated schedule works
 
-<!-- TODO: update this section to match the recommender as finished -->
-The recommender finds the **least damaging** changes, using the importance ratings you gave:
+The recommender uses the importance ratings you gave to decide what can change:
 
-1. **Shorten first.** Activities are trimmed toward a floor set by their importance: a 5 is never touched, a 4 can lose a quarter, a 3 half, a 2 most of it. Activities marked as movable within the day can slide earlier, so the time saved becomes sleep.
-2. **Cut only if needed.** If shortening isn't enough, activities rated 1 are removed, least important first.
+| Importance | What happens on a short night |
+|---|---|
+| 5 · Untouchable | Never changed |
+| 4 · High | Shortened to 75% of its length |
+| 3 · Medium | Shortened to 50% |
+| 2 · Low | Shortened to 25% |
+| 1 · Expendable | Removed |
 
-It works on the worst night first and reports changes in your own words, for example *"trim Homework by 30 minutes."*
+For every night below 8 h 30 min, it looks at the activities on the evening that sets that night and shortens each one to its floor, once. Activities marked as movable within the day slide earlier to close the gap, so the time saved moves bedtime earlier and becomes sleep.
+
+The Updated schedule screen shows each day's new activities and the sleep that night, next to how much it changed. You can then **adjust any start or end time yourself** and see your sleep recalculate straight away, or reset to the recommendation.
 
 ## Design decisions
 
@@ -52,6 +58,7 @@ It works on the worst night first and reports changes in your own words, for exa
 | **Wake time per morning** | Nobody wakes at 6:40 on a Saturday. Per-day wake times mean weekends need no special case. |
 | A mismatch means **the week is incomplete**, not a lecture | Once phone time is entered as an activity rated 1, the recommender can cut it through the same mechanism as everything else. |
 | **No accounts, no database** | Your week stays in your browser session. You can download it as a file and load it again later. Nothing about you is stored on a server. |
+| **Always shorten to the floor**, then let you adjust | Gives the most sleep the week allows. You know your week best, so you can then give back time where it matters. |
 | **No sleep-hygiene advice or gamification** | The app changes schedules. It gives one diagnosis and one set of changes: no badges, streaks or tips. |
 
 ## Built with
@@ -89,11 +96,13 @@ python -m pytest tests
 | `views/week.py` | Screen 2: enter your week (activity grid, pop-up form, wake times) |
 | `views/results.py` | Screen 3: predicted vs. actual sleep, coloured, and the Proceed button |
 | `views/good_job.py` | Shown when every night is green |
-| `views/updated_schedule.py` | Shown when the week needs changes; the recommender's output |
+| `views/updated_schedule.py` | Shown when the week needs changes: the updated schedule, sleep per night, and times you can adjust |
 | `time_helpers.py` | Converting clock times to minutes and back, and activity length across midnight |
 | `sleep_calc.py` | **The available-sleep calculation:** seven nights, in minutes |
-| `diagnosis.py` | **The decision:** all green, mismatch, or red on both |
-| `flow.py` | Moving between screens |
+| `diagnosis.py` | **The decision:** all green, mismatch, or red on both, plus the limit of two send-backs |
+| `recommender.py` | **The recommender:** shortens or cuts activities on short nights |
+| `flow.py` | Moving between screens, and the fall-asleep question |
+| `widgets.py` | The AM/PM time picker |
 | `storage.py` | The shape of a saved week, and saving/loading it as a JSON file |
 | `tests/` | Automated tests, including the off-by-one-day check and activities that cross midnight |
 
@@ -107,18 +116,22 @@ The Congressional App Challenge allows AI assistance as long as it is disclosed 
 **I wrote, myself:**
 - the time helpers: converting clock times to minutes and back, and activity length with the midnight correction (`time_helpers.py`)
 - the available-sleep calculation, including activities that cross midnight, per-day wake times, and naming each night by its morning (`sleep_calc.py`)
-- the results logic: guards for missing data, colouring each night against the 8 h 30 min target, and the decision of where the user goes next (`views/results.py`, `diagnosis.py`)
-- the recommender: shorten, then cut (`views/updated_schedule.py`) <!-- TODO: confirm once finished -->
-- the introduction and outcome-screen text
+- the results logic: guards for missing data, the table, colouring each night against the 8 h 30 min target (`views/results.py`)
+- the decision of where the user goes next, and the limit of two send-backs before the fall-asleep question (`diagnosis.py`)
+- the recommender: finding short nights, shortening to each activity's floor, sliding movable activities and cutting importance-1 activities (`recommender.py`)
+- the introduction text (Claude fixed spelling and grammar)
 - every design decision listed above
 
 **Claude wrote:**
 - the project setup and the app's structure: navigation, the sidebar, and saving/loading the week as a file (`app.py`, `storage.py`, `flow.py`)
-- the week-entry screen's form and grid (`views/week.py`)
-- the table's input boxes and the hours display on the results screen
+- the week-entry screen's form, grid and wake-time pickers (`views/week.py`, `widgets.py`)
+- the input boxes and hours display on the results screen, and the Proceed button
+- the Updated schedule screen's layout and the editing of times (`views/updated_schedule.py`)
+- the Good job screen, including its text, at my request (`views/good_job.py`)
+- the fall-asleep question's pop-up and its two messages (`flow.py`)
+- the layout of the introduction page, and the visual design of the whole app
 - the automated tests in `tests/`
-- the visual design
-- the README with input and directions from me
+- this README, with input and directions from me
 
 **How I used it otherwise:** Claude explained Python and Streamlit concepts as I needed them (loops, functions, dictionaries, imports), ran my code against test cases, and pointed out bugs and edge cases for me to fix. It was told not to write the core logic, and it didn't.
 
@@ -128,6 +141,8 @@ The Congressional App Challenge allows AI assistance as long as it is disclosed 
 - Actual sleep is **self-reported**.
 - The app models a **typical week**. Unusual weeks need to be entered separately.
 - Moving an activity to a **different day** is out of scope for this version.
+- An activity is shortened or cut on **every day it's on**, including days whose nights were already long enough.
+- The recommender shortens to each activity's floor rather than only as much as needed. You can adjust the times afterwards.
 
 ## Sources
 

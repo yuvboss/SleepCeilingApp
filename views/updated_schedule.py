@@ -131,11 +131,11 @@ for i, activity in enumerate(updated["activities"]):
     name_col.markdown(label)
     time_picker(
         "Start", value=as_clock(activity["start"]), key=f"tweak_start_{i}",
-        on_change=save_tweak, args=(i, "start"), container=start_col,
+        on_change=save_tweak, args=(i, "start"), container=start_col, every_minute=True,
     )
     time_picker(
         "End", value=as_clock(activity["end"]), key=f"tweak_end_{i}",
-        on_change=save_tweak, args=(i, "end"), container=end_col,
+        on_change=save_tweak, args=(i, "end"), container=end_col, every_minute=True,
     )
 
 

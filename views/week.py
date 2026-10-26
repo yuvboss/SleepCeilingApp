@@ -87,10 +87,11 @@ with st.container(border=True):
 
     different = [day for day in DAYS if week["wake"][day] != week["wake_default"]]
     with st.expander("Different wake-up time on some mornings? (weekends usually are)", expanded=bool(different)):
-        columns = st.columns(7)
+        # Four per row (Mon-Thu, then Fri-Sun): seven in one row are too narrow for "12:00 PM".
+        columns = st.columns(4) + st.columns(4)
         for column, day in zip(columns, DAYS):
             time_picker(
-                day,
+                DAY_NAMES[day],
                 value=as_clock(week["wake"][day]),
                 container=column,
                 key=f"wake_{day}",

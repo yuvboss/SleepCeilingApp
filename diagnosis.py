@@ -1,8 +1,9 @@
-from flow import send_back_to_week, go_to_good_job, go_to_updated_schedule
+from flow import send_back_to_week, go_to_good_job, go_to_updated_schedule, ask_fall_asleep_question
 import streamlit as st
 @st.dialog("No Sleep Entered!")
 def my_popup():
     st.write("Enter an actual amount of sleep before proceeding.")
+
 def Conditions(predicted, actual):
     compareOne = []
     compareTwo = []
@@ -24,7 +25,14 @@ def Conditions(predicted, actual):
     if all(compareOne) and all(compareTwo):
         go_to_good_job()
     elif compareOne != compareTwo:
-        send_back_to_week("Your predicted sleep and actual sleep don't match! Enter all your activities before proceeding")
+        sendBack = st.session_state.get("send_backs", 0) 
+        if sendBack < 2:
+            st.session_state["send_backs"] = sendBack + 1
+            send_back_to_week("Your predicted sleep and actual sleep don't match! Enter all your activities before proceeding")
+        else:
+            ask_fall_asleep_question()
+            st.stop()
+
     else:
         go_to_updated_schedule()
         

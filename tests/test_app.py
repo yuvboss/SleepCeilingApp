@@ -14,7 +14,7 @@ def test_entry_screen_shows_the_form():
     assert not at.exception
     assert not at.warning
     assert at.selectbox(key="wake_input").label == "Usual wake-up time"
-    assert at.selectbox(key="wake_Sat").label == "Sat"
+    assert at.selectbox(key="wake_Sat").label == "Saturday"
 
 
 def test_message_sent_back_to_the_entry_screen_shows_once():
