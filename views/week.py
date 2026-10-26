@@ -7,6 +7,7 @@ import datetime
 import streamlit as st
 
 from storage import DAYS
+from flow import go_to_results
 from time_helpers import clock_to_minutes, minutes_to_clock
 
 DAY_NAMES = dict(zip(DAYS, ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]))
@@ -15,6 +16,18 @@ DAY_NAMES = dict(zip(DAYS, ["Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 week = st.session_state.week
 
 st.title("Enter your week")
+
+
+# A message sent from the results screen with flow.send_back_to_week(...), shown once as a pop-up.
+@st.dialog("Check your week")
+def show_message(text):
+    st.write(text)
+    if st.button("OK", type="primary"):
+        st.rerun()
+
+
+if "week_message" in st.session_state:
+    show_message(st.session_state.pop("week_message"))
 
 # Until both clock conversions are written, show a notice instead of a form that can't save.
 try:
@@ -88,9 +101,14 @@ def activity_dialog(index=None):
     existing = week["activities"][index] if index is not None else None
 
     name = st.text_input("Activity name", value=existing["name"] if existing else "")
-    days = st.multiselect(
-        "Days", DAYS, default=existing["days"] if existing else [], format_func=DAY_NAMES.get
-    )
+
+    # The day picker's value lives in session state (reset each time the pop-up opens, see
+    # open_activity_dialog) so the "Every day" button can fill it in.
+    if "dialog_days" not in st.session_state:
+        st.session_state.dialog_days = list(existing["days"]) if existing else []
+    days_col, all_col = st.columns([4, 1], vertical_alignment="bottom")
+    all_col.button("Every day", on_click=lambda: st.session_state.update(dialog_days=list(DAYS)))
+    days = days_col.multiselect("Days", DAYS, key="dialog_days", format_func=DAY_NAMES.get)
     left, right = st.columns(2)
     start = left.time_input(
         "Start", value=minutes_to_clock(existing["start"]) if existing else None, step=300
@@ -107,7 +125,7 @@ def activity_dialog(index=None):
         help="5 = untouchable, 1 = fully expendable.",
     )
     malleable = st.checkbox(
-        "Could be moved to a different time in the week",
+        "Could be moved to a different time in the day",
         value=existing["malleable"] if existing else False,
     )
 
@@ -146,13 +164,19 @@ def activity_dialog(index=None):
         st.rerun()
 
 
+def open_activity_dialog(index=None):
+    """Open the pop-up with a fresh day picker (otherwise it would keep the last activity's days)."""
+    st.session_state.pop("dialog_days", None)
+    activity_dialog(index)
+
+
 # --- The grid: Days | Activities, Monday to Sunday ---
 # Each activity is stored once but shown under every day in its "days" list, sorted by start time.
 # Clicking one opens the pop-up to edit it.
 
 st.subheader("Activities")
 if st.button("Add activity"):
-    activity_dialog()
+    open_activity_dialog()
 
 header_day, header_acts = st.columns([1, 3])
 header_day.markdown("**Days**")
@@ -169,4 +193,10 @@ for day in DAYS:
         a = week["activities"][i]
         label = f"{a['name']}  ·  {clock(a['start'])}–{clock(a['end'])}"
         if acts_col.button(label, key=f"activity-{day}-{i}"):
-            activity_dialog(i)
+            open_activity_dialog(i)
+
+
+# --- Done entering the week ---
+st.divider()
+if st.button("Get results", type="primary"):
+    go_to_results()

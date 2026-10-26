@@ -22,7 +22,7 @@ THE WEEK (this is what st.session_state.week holds, and what your calculation re
                 "end": 1380,              # minutes since midnight (23:00). Can be LESS than start:
                                           #   that means the activity runs past midnight.
                 "importance": 3,          # 1..5. 5 = untouchable, 1 = can be cut. Used by the recommender.
-                "malleable": False,       # collected but unused (project context, section 8.4)
+                "malleable": False,       # could move to a different time in the SAME day
             },
         ],
     }

@@ -37,7 +37,32 @@ def load_uploaded_week():
     st.session_state.load_message = ("success", f"Loaded {file.name}.")
 
 
+# --- Navigation: the three screens from the project context, section 3, plus the two outcome
+# screens the results screen sends people to (see flow.py) ---
+# Every page is always registered (so the app can switch to it), but Streamlit's own page list is
+# hidden. The sidebar below shows only the pages the user has reached: Results after "Get results",
+# and the outcome screens once the results send them there. flow.py sets these flags.
+intro_page = st.Page("views/intro.py", title="Introduction", default=True)
+week_page = st.Page("views/week.py", title="Enter your week")
+results_page = st.Page("views/results.py", title="Results")
+good_job_page = st.Page("views/good_job.py", title="Good job")
+schedule_page = st.Page("views/updated_schedule.py", title="Updated schedule")
+
+navigation = st.navigation(
+    [intro_page, week_page, results_page, good_job_page, schedule_page], position="hidden"
+)
+
 with st.sidebar:
+    st.page_link(intro_page)
+    st.page_link(week_page)
+    if st.session_state.get("show_results"):
+        st.page_link(results_page)
+    if st.session_state.get("show_good_job"):
+        st.page_link(good_job_page)
+    if st.session_state.get("show_updated_schedule"):
+        st.page_link(schedule_page)
+    st.divider()
+
     st.subheader("Save or load your week")
     st.download_button(
         "Download week",
@@ -54,11 +79,4 @@ with st.sidebar:
         else:
             st.error(text)
 
-# --- Navigation: the three screens from the project context, section 3 ---
-# Each st.Page is one file in views/. To add a screen, add a file there and a line here.
-pages = [
-    st.Page("views/intro.py", title="Introduction", default=True),
-    st.Page("views/week.py", title="Enter your week"),
-    st.Page("views/results.py", title="Results"),
-]
-st.navigation(pages).run()
+navigation.run()
