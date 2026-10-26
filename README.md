@@ -1,4 +1,4 @@
-# Sleep Planner
+# Sleep Ceiling
 
 **A sleep-first schedule app for teenagers.** Enter a typical week once, and the app works out how much sleep that week actually leaves room for, night by night. It then compares that with how much you really sleep and tells you what to do next.
 

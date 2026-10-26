@@ -4,6 +4,7 @@ from recommender import recommend
 from sleep_calc import SleepCalculation
 from storage import DAYS, week_to_json
 from time_helpers import clock_to_minutes, minutes_to_clock
+from widgets import time_picker
 
 # "Updated schedule" screen: shown when any night is red for both predicted and actual sleep.
 #
@@ -12,6 +13,7 @@ from time_helpers import clock_to_minutes, minutes_to_clock
 # start/end time themselves, and recomputes their sleep with the student's SleepCalculation.
 
 st.title("Updated schedule")
+st.caption("Your week with activities shortened or cut to make room for sleep. You can adjust any of the times below.")
 
 week = st.session_state.week
 if any(week["wake"][day] is None for day in DAYS) or not week["activities"]:
@@ -73,13 +75,15 @@ before = SleepCalculation(week)
 after = SleepCalculation(updated)
 kept_names = {a["name"] for a in updated["activities"]}
 
-day_col, schedule_col, sleep_col = st.columns([1, 3, 2])
+table = st.container(border=True)
+day_col, schedule_col, sleep_col = table.columns([1, 3, 2])
 day_col.markdown("**Day**")
 schedule_col.markdown("**Updated schedule**")
 sleep_col.markdown("**New sleep time**")
 for i, day in enumerate(DAYS):
-    day_col, schedule_col, sleep_col = st.columns([1, 3, 2])
-    day_col.write(day)
+    table.divider()
+    day_col, schedule_col, sleep_col = table.columns([1, 3, 2])
+    day_col.markdown(f"**{day}**")
 
     lines = [
         f"{a['name']}: {clock_text(a['start'])} – {clock_text(a['end'])}"
@@ -97,13 +101,13 @@ for i, day in enumerate(DAYS):
     change = ""
     if before[night] is not None and after[night] is not None and round(after[night] - before[night]) != 0:
         change = f"  \n({round(after[night] - before[night]):+d} min)"
-    sleep_col.markdown(as_hours(after[night]) + change)
+    sleep_col.markdown(f"**{as_hours(after[night])}**" + change)
 
 st.caption("New sleep time is the sleep that night, until the next morning's wake-up time.")
 
 
 # --- Adjust the times ---
-st.subheader("Adjust the times")
+st.subheader(":material/tune: Adjust the times")
 st.caption("These are the recommended times. Change any of them and the schedule above updates.")
 
 
@@ -125,13 +129,13 @@ for i, activity in enumerate(updated["activities"]):
         elif length_now != length_before:
             label += f"  \n{length_before} → {length_now} min"
     name_col.markdown(label)
-    start_col.time_input(
-        "Start", value=as_clock(activity["start"]), step=300, key=f"tweak_start_{i}",
-        on_change=save_tweak, args=(i, "start"),
+    time_picker(
+        "Start", value=as_clock(activity["start"]), key=f"tweak_start_{i}",
+        on_change=save_tweak, args=(i, "start"), container=start_col,
     )
-    end_col.time_input(
-        "End", value=as_clock(activity["end"]), step=300, key=f"tweak_end_{i}",
-        on_change=save_tweak, args=(i, "end"),
+    time_picker(
+        "End", value=as_clock(activity["end"]), key=f"tweak_end_{i}",
+        on_change=save_tweak, args=(i, "end"), container=end_col,
     )
 
 
@@ -146,4 +150,4 @@ def reset():
     clear_pickers()
 
 
-st.button("Reset to the recommendation", on_click=reset)
+st.button("Reset to the recommendation", on_click=reset, icon=":material/restart_alt:")

@@ -8,14 +8,17 @@ import streamlit as st
 
 from storage import DAYS
 from flow import go_to_results
+from widgets import time_picker
 from time_helpers import clock_to_minutes, minutes_to_clock
 
 DAY_NAMES = dict(zip(DAYS, ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]))
+IMPORTANCE = {1: "1 · Expendable", 2: "2 · Low", 3: "3 · Medium", 4: "4 · High", 5: "5 · Untouchable"}
 
 # A shortcut to the shared week. Changing `week` here changes st.session_state.week.
 week = st.session_state.week
 
 st.title("Enter your week")
+st.caption("Describe a typical week: when you wake up, and everything you do.")
 
 
 # A message sent from the results screen with flow.send_back_to_week(...), shown once as a pop-up.
@@ -71,26 +74,29 @@ def save_day_wake(day):
     week["wake"][day] = None if t is None else clock_to_minutes(t)
 
 
-st.time_input(
-    "Usual wake-up time",
-    value=as_clock(week["wake_default"]),
-    step=300,
-    key="wake_input",
-    on_change=save_default_wake,
-)
+with st.container(border=True):
+    st.subheader(":material/alarm: Wake-up times")
+    wake_col, _ = st.columns([1, 1])
+    time_picker(
+        "Usual wake-up time",
+        value=as_clock(week["wake_default"]),
+        key="wake_input",
+        on_change=save_default_wake,
+        container=wake_col,
+    )
 
-different = [day for day in DAYS if week["wake"][day] != week["wake_default"]]
-with st.expander("Different wake-up time on some mornings? (weekends usually are)", expanded=bool(different)):
-    columns = st.columns(7)
-    for column, day in zip(columns, DAYS):
-        column.time_input(
-            day,
-            value=as_clock(week["wake"][day]),
-            step=300,
-            key=f"wake_{day}",
-            on_change=save_day_wake,
-            args=(day,),
-        )
+    different = [day for day in DAYS if week["wake"][day] != week["wake_default"]]
+    with st.expander("Different wake-up time on some mornings? (weekends usually are)", expanded=bool(different)):
+        columns = st.columns(7)
+        for column, day in zip(columns, DAYS):
+            time_picker(
+                day,
+                value=as_clock(week["wake"][day]),
+                container=column,
+                key=f"wake_{day}",
+                on_change=save_day_wake,
+                args=(day,),
+            )
 
 
 # --- Activity modal: adds a new activity, or edits / deletes an existing one ---
@@ -110,19 +116,19 @@ def activity_dialog(index=None):
     all_col.button("Every day", on_click=lambda: st.session_state.update(dialog_days=list(DAYS)))
     days = days_col.multiselect("Days", DAYS, key="dialog_days", format_func=DAY_NAMES.get)
     left, right = st.columns(2)
-    start = left.time_input(
-        "Start", value=minutes_to_clock(existing["start"]) if existing else None, step=300
+    start = time_picker(
+        "Start", value=minutes_to_clock(existing["start"]) if existing else None, container=left
     )
-    end = right.time_input(
-        "End", value=minutes_to_clock(existing["end"]) if existing else None, step=300
+    end = time_picker(
+        "End", value=minutes_to_clock(existing["end"]) if existing else None, container=right
     )
     st.caption("An end time earlier than the start means it runs past midnight.")
-    importance = st.slider(
-        "Importance",
-        1,
-        5,
+    importance = st.select_slider(
+        "How important is it?",
+        options=[1, 2, 3, 4, 5],
         value=existing["importance"] if existing else 3,
-        help="5 = untouchable, 1 = fully expendable.",
+        format_func=IMPORTANCE.get,
+        help="The higher the number, the more Sleep Ceiling protects it when suggesting changes.",
     )
     malleable = st.checkbox(
         "Could be moved to a different time in the day",
@@ -130,7 +136,7 @@ def activity_dialog(index=None):
     )
 
     save_col, delete_col = st.columns(2)
-    if save_col.button("Save", type="primary"):
+    if save_col.button("Save", type="primary", icon=":material/check:", use_container_width=True):
         problems = []
         if not name.strip():
             problems.append("Give it a name.")
@@ -159,7 +165,7 @@ def activity_dialog(index=None):
             week["activities"].append(activity)
         st.rerun()
 
-    if existing and delete_col.button("Delete"):
+    if existing and delete_col.button("Delete", icon=":material/delete:", use_container_width=True):
         del week["activities"][index]
         st.rerun()
 
@@ -174,29 +180,29 @@ def open_activity_dialog(index=None):
 # Each activity is stored once but shown under every day in its "days" list, sorted by start time.
 # Clicking one opens the pop-up to edit it.
 
-st.subheader("Activities")
-if st.button("Add activity"):
+title_col, add_col = st.columns([3, 1], vertical_alignment="bottom")
+title_col.subheader(":material/event_note: Your activities")
+if add_col.button("Add activity", icon=":material/add:", use_container_width=True):
     open_activity_dialog()
-
-header_day, header_acts = st.columns([1, 3])
-header_day.markdown("**Days**")
-header_acts.markdown("**Activities**")
+st.caption("Click an activity to change or delete it.")
 
 for day in DAYS:
-    day_col, acts_col = st.columns([1, 3])
-    day_col.write(DAY_NAMES[day])
-    on_day = [i for i, a in enumerate(week["activities"]) if day in a["days"]]
-    on_day.sort(key=lambda i: week["activities"][i]["start"])
-    if not on_day:
-        acts_col.caption("Nothing yet")
-    for i in on_day:
-        a = week["activities"][i]
-        label = f"{a['name']}  ·  {clock(a['start'])}–{clock(a['end'])}"
-        if acts_col.button(label, key=f"activity-{day}-{i}"):
-            open_activity_dialog(i)
+    with st.container(border=True):
+        day_col, acts_col = st.columns([1, 3])
+        day_col.markdown(f"**{DAY_NAMES[day]}**")
+        on_day = [i for i, a in enumerate(week["activities"]) if day in a["days"]]
+        on_day.sort(key=lambda i: week["activities"][i]["start"])
+        if not on_day:
+            acts_col.caption(f"Nothing on {DAY_NAMES[day]} yet")
+        for i in on_day:
+            a = week["activities"][i]
+            label = f"{a['name']}  ·  {clock(a['start'])} – {clock(a['end'])}"
+            if acts_col.button(label, key=f"activity-{day}-{i}", use_container_width=True):
+                open_activity_dialog(i)
 
 
 # --- Done entering the week ---
 st.divider()
-if st.button("Get results", type="primary"):
+_, middle, _ = st.columns([1, 2, 1])
+if middle.button("Get results", type="primary", icon=":material/bedtime:", use_container_width=True):
     go_to_results()

@@ -4,7 +4,8 @@ from streamlit.testing.v1 import AppTest
 def test_app_starts_on_the_introduction():
     at = AppTest.from_file("app.py").run()
     assert not at.exception
-    assert at.title[0].value == "Introduction the Sleep Planner App"
+    assert any("Introducing Sleep Ceiling" in m.value for m in at.markdown)
+    assert any(b.label == "Enter your week" for b in at.button)
 
 
 def test_entry_screen_shows_the_form():
@@ -12,8 +13,8 @@ def test_entry_screen_shows_the_form():
     at.switch_page("views/week.py").run()
     assert not at.exception
     assert not at.warning
-    assert at.time_input(key="wake_input").label == "Usual wake-up time"
-    assert at.time_input(key="wake_Sat").label == "Sat"
+    assert at.selectbox(key="wake_input").label == "Usual wake-up time"
+    assert at.selectbox(key="wake_Sat").label == "Sat"
 
 
 def test_message_sent_back_to_the_entry_screen_shows_once():

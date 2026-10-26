@@ -10,7 +10,7 @@ import streamlit as st
 
 from storage import empty_week, week_from_json, week_to_json
 
-st.set_page_config(page_title="Sleep Planner", page_icon="🌙")
+st.set_page_config(page_title="Sleep Ceiling", page_icon="🌙")
 
 # THE WEEK. Every screen reads and writes this same dictionary. Its exact shape is described at
 # the top of storage.py. It starts empty; views/week.py fills it as the user enters activities.
@@ -42,17 +42,18 @@ def load_uploaded_week():
 # Every page is always registered (so the app can switch to it), but Streamlit's own page list is
 # hidden. The sidebar below shows only the pages the user has reached: Results after "Get results",
 # and the outcome screens once the results send them there. flow.py sets these flags.
-intro_page = st.Page("views/intro.py", title="Introduction", default=True)
-week_page = st.Page("views/week.py", title="Enter your week")
-results_page = st.Page("views/results.py", title="Results")
-good_job_page = st.Page("views/good_job.py", title="Good job")
-schedule_page = st.Page("views/updated_schedule.py", title="Updated schedule")
+intro_page = st.Page("views/intro.py", title="Introduction", icon=":material/home:", default=True)
+week_page = st.Page("views/week.py", title="Enter your week", icon=":material/edit_calendar:")
+results_page = st.Page("views/results.py", title="Results", icon=":material/bedtime:")
+good_job_page = st.Page("views/good_job.py", title="Good job", icon=":material/check_circle:")
+schedule_page = st.Page("views/updated_schedule.py", title="Updated schedule", icon=":material/event_available:")
 
 navigation = st.navigation(
     [intro_page, week_page, results_page, good_job_page, schedule_page], position="hidden"
 )
 
 with st.sidebar:
+    st.markdown("## 🌙 Sleep Ceiling")
     st.page_link(intro_page)
     st.page_link(week_page)
     if st.session_state.get("show_results"):
@@ -63,12 +64,14 @@ with st.sidebar:
         st.page_link(schedule_page)
     st.divider()
 
-    st.subheader("Save or load your week")
+    st.markdown("**Save or load your week**")
+    st.caption("Your week isn't stored online. Download it to keep it, and load it next time.")
     st.download_button(
         "Download week",
         week_to_json(st.session_state.week),
         file_name="my-week.json",
         mime="application/json",
+        icon=":material/download:",
     )
     st.file_uploader("Load a saved week", type="json", key="week_upload", on_change=load_uploaded_week)
     message = st.session_state.pop("load_message", None)

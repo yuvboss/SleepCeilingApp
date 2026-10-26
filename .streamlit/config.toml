@@ -1,0 +1,11 @@
+# Sleep Ceiling's look: a calm night-sky theme with rounded fonts.
+[theme]
+base = "dark"
+primaryColor = "#5C6BF0"
+backgroundColor = "#0E1326"
+secondaryBackgroundColor = "#1A2142"
+textColor = "#E6E9F5"
+borderColor = "#2C3560"
+font = "Nunito:https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap, sans-serif"
+headingFont = "Fredoka:https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap, sans-serif"
+baseRadius = "0.75rem"

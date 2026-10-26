@@ -10,3 +10,10 @@ ClaudeContext/
 tests.py
 practice.py
 scratch.py
+Introductionpage.txt
+
+# Weeks downloaded from the app while testing (personal schedules)
+my-week*.json
+
+# Streamlit secrets, if ever added (never commit these)
+.streamlit/secrets.toml
