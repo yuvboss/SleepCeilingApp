@@ -6,7 +6,7 @@ Congressional App Challenge 2026 · California's 15th district · Saro, Carlmont
 
 <!-- TODO before submitting: add the demo video link -->
 - **Live app:** [sleepceilingapp-hoh7zobihqmz6pdmdlo5bm.streamlit.app](https://sleepceilingapp-hoh7zobihqmz6pdmdlo5bm.streamlit.app)
-- **Demo video:** _link_
+- **Demo video:** [youtu.be/-99DwAHale0](https://youtu.be/-99DwAHale0)
 
 ---
 
