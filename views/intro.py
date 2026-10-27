@@ -30,7 +30,7 @@ st.markdown(
     <div class="intro-hero">
         <div class="intro-title">Introducing Sleep Ceiling</div>
         <div class="intro-tagline">The app that helps you reach your sleeping potential!</div>
-        <div class="intro-goal">Our goal is to help you optimize your sleep while maintaining a balanced schedule.</div>
+        <div class="intro-goal">Our goal is to help you maximize your sleep while maintaining a balanced schedule.</div>
     </div>
     """,
     unsafe_allow_html=True,
