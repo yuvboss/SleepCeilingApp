@@ -63,14 +63,16 @@ def save_default_wake():
     old = week["wake_default"]
     for day in DAYS:
         if week["wake"][day] is None or week["wake"][day] == old:
-            week["wake"][day] = new
-            st.session_state.pop(f"wake_{day}", None)  # let that day's picker show the new value
+            week["wake"][day] = new  # that day's picker shows it on the rerun (time_picker syncs it)
     week["wake_default"] = new
 
 
 def save_day_wake(day):
     """One morning's wake time changed."""
-    t = st.session_state[f"wake_{day}"]
+    key = f"wake_{day}"
+    if key not in st.session_state:  # e.g. the session was reset while reconnecting
+        return
+    t = st.session_state[key]
     week["wake"][day] = None if t is None else clock_to_minutes(t)
 
 
